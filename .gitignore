@@ -5,3 +5,4 @@ ranked.csv
 snapshot25.csv
 *.log
 .venv/
+index_live.html
