@@ -19,6 +19,7 @@ st.set_page_config(
     page_title="Quality / Value / Moat Screener",
     page_icon="📊",
     layout="wide",
+    initial_sidebar_state="expanded",
 )
 
 # ---------------------------------------------------------------------------
@@ -97,7 +98,7 @@ st.caption(
 
 with st.sidebar:
     st.header("Settings")
-    mode = st.radio("Mode", ["Check one ticker", "Rank a universe"])
+    mode = st.radio("Mode", ["Rank a universe", "Check one ticker"])
     uni_label = st.selectbox("Universe", list(UNIVERSES.keys()))
     uni_key = UNIVERSES[uni_label]
     custom_raw = ""
@@ -105,11 +106,35 @@ with st.sidebar:
         custom_raw = st.text_input(
             "Tickers (comma-separated)", value="NVDA,MSFT,GOOGL,V,MA"
         )
-    if uni_key == "sp500":
-        st.warning("S&P 500 pulls ~500 tickers and can take 10–20 minutes.")
+    is_slow = uni_key in ("sp500", "nasdaq100")
+    if is_slow:
+        st.warning("This pulls the whole index and can take several minutes.")
+    if st.button("🔄 Refresh data"):
+        st.cache_data.clear()
+        st.rerun()
+
+# ---- Rank a universe (default landing view) ----------------------------
+if mode == "Rank a universe":
+    st.subheader(f"Ranking — {uni_label}")
+    # Fast universes render the table immediately; slow index pulls wait for
+    # an explicit click so nobody triggers a 10-minute pull by accident.
+    go = st.button("Run ranking", type="primary") if is_slow else True
+    if go:
+        with st.spinner("Building universe…"):
+            tickers = list(cached_universe(uni_key, custom_raw))
+        if not tickers:
+            st.error("No tickers in that universe.")
+        else:
+            st.caption(f"Pulling {len(tickers)} tickers (live)…")
+            df = rank_with_progress(tickers)
+            if df.empty:
+                st.error("Pull failed (no scorable tickers).")
+            else:
+                st.success(f"Ranked {len(df)} companies — sorted by quality.")
+                show_ranked(df)
 
 # ---- Check one ticker --------------------------------------------------
-if mode == "Check one ticker":
+elif mode == "Check one ticker":
     ticker = st.text_input("Ticker", value="NVDA").strip().upper()
     rank_too = st.checkbox(
         "Also rank it within the universe (extra time)", value=True
@@ -156,19 +181,3 @@ if mode == "Check one ticker":
                         f"({pct}th percentile)."
                     )
                 show_ranked(df)
-
-# ---- Rank a universe ---------------------------------------------------
-else:
-    if st.button("Rank universe", type="primary"):
-        with st.spinner("Building universe…"):
-            tickers = list(cached_universe(uni_key, custom_raw))
-        if not tickers:
-            st.error("No tickers in that universe.")
-            st.stop()
-        st.write(f"Pulling **{len(tickers)}** tickers…")
-        df = rank_with_progress(tickers)
-        if df.empty:
-            st.error("Pull failed (no scorable tickers).")
-        else:
-            st.success(f"Ranked {len(df)} companies.")
-            show_ranked(df)
