@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quality · Value · Moat Screener</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e8e6e1; --dim:#8a8f9c; --gold:#d4a24e; --green:#5fb87f;
+    --red:#d4685f; --blue:#6aa0d8; --purple:#a989d8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+    padding:32px 20px; line-height:1.5;
+    background-image:radial-gradient(circle at 15% -10%, #1b2030 0, transparent 45%);
+  }
+  .wrap{max-width:1240px;margin:0 auto}
+  h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(26px,5vw,44px);letter-spacing:-.02em;line-height:1}
+  h1 .accent{color:var(--gold);font-style:italic}
+  .sub{color:var(--dim);margin:10px 0 14px;font-size:13px;max-width:680px}
+  .stamp{
+    display:inline-flex;gap:14px;flex-wrap:wrap;align-items:center;
+    background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+    padding:8px 14px;margin-bottom:22px;font-size:11.5px;color:var(--dim);
+  }
+  .stamp b{color:var(--gold);font-weight:600}
+  .stamp .sep{color:var(--line)}
+  .moatbanner{
+    background:linear-gradient(90deg,rgba(212,162,78,.12),rgba(212,162,78,.02));
+    border:1px solid var(--gold);border-left-width:4px;border-radius:10px;
+    padding:13px 18px;margin-bottom:16px;font-size:12.5px;color:var(--ink);
+  }
+  .moatbanner b{color:var(--gold)}
+  .typebanner{
+    background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:11px 18px;margin-bottom:24px;font-size:12px;color:var(--dim);
+  }
+  .typebanner b{color:var(--ink)}
+  .tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;white-space:nowrap}
+  .ty-comp{background:rgba(95,184,127,.15);color:var(--green)}
+  .ty-cyc{background:rgba(212,162,78,.18);color:var(--gold)}
+  .ty-hyper{background:rgba(169,137,216,.18);color:var(--purple)}
+  .controls{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px;margin-bottom:22px}
+  .controls h2{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:4px}
+  .controls .note{color:var(--dim);font-size:12px;margin-bottom:18px}
+  .sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px}
+  .sl label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+  .sl label span:last-child{color:var(--gold);font-weight:600}
+  input[type=range]{width:100%;accent-color:var(--gold);cursor:pointer}
+  .total{margin-top:16px;font-size:12px;color:var(--dim)}
+  .total b{color:var(--ink)}
+  .modebar{display:flex;gap:8px;margin:20px 0 8px;flex-wrap:wrap}
+  .modebar button{background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-family:inherit;font-size:12px;padding:8px 14px;border-radius:8px;cursor:pointer;transition:.15s}
+  .modebar button.on{background:var(--gold);color:#1a1205;border-color:var(--gold);font-weight:600}
+  .hint{font-size:11px;color:var(--dim);margin-bottom:12px}
+  .whatif{background:var(--panel);border:1px dashed var(--gold);border-radius:14px;padding:20px 22px;margin-bottom:22px}
+  .whatif h2{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:4px}
+  .whatif .note{color:var(--dim);font-size:12px;margin-bottom:16px}
+  .autofill{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .autofill input{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:13px;border-radius:6px;padding:8px 10px;width:160px;text-transform:uppercase}
+  .wi-auto{background:var(--blue);color:#06121f;border:1px solid var(--blue);font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer}
+  .wi-auto:disabled{opacity:.5;cursor:wait}
+  .wi-status{font-size:11.5px;color:var(--dim)}
+  .wi-news{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer}
+  .wi-news:disabled{opacity:.5;cursor:wait}
+  .newscard{margin-bottom:16px}
+  .newscard:empty{display:none}
+  .news-overall{font-size:12.5px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;margin-bottom:10px}
+  .news-overall b{color:var(--gold)}
+  .news-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px}
+  .news-item:last-child{border:0}
+  .news-dot{flex:0 0 auto;width:9px;height:9px;border-radius:50%;margin-top:4px}
+  .sig-pos{background:var(--green)} .sig-neg{background:var(--red)} .sig-neu{background:var(--dim)}
+  .news-body{flex:1}
+  .news-head{color:var(--ink);font-weight:600}
+  .news-meta{color:var(--dim);font-size:10.5px;margin:1px 0 3px}
+  .news-why{color:var(--dim)}
+  .news-why b.pos{color:var(--green)} .news-why b.neg{color:var(--red)} .news-why b.neu{color:var(--dim)}
+  .news-cat{font-size:9.5px;padding:1px 6px;border-radius:20px;background:var(--line);color:var(--ink);margin-left:6px;vertical-align:middle}
+  .wi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px 14px;margin-bottom:14px}
+  .wi-f label{display:block;font-size:10.5px;color:var(--dim);margin-bottom:3px;text-transform:uppercase;letter-spacing:.03em}
+  .wi-f input,.wi-f select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:12px;border-radius:6px;padding:6px 7px}
+  .wi-btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .wi-btns button{font-family:inherit;font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--line)}
+  .wi-add{background:var(--gold);color:#1a1205;border-color:var(--gold);font-weight:600}
+  .wi-clear{background:var(--panel2);color:var(--dim)}
+  .wi-result{font-size:12.5px;color:var(--ink);margin-top:12px;min-height:18px}
+  .wi-result b{color:var(--gold)}
+  tr.youradded td{background:rgba(212,162,78,.12)!important;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold)}
+  .yrtag{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600;background:var(--gold);color:#1a1205}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--dim);font-weight:500;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none}
+  th:hover{color:var(--ink)}
+  th.l,td.l{text-align:left}
+  td.tk{font-weight:600;color:var(--ink)}
+  td.co{color:var(--dim);font-size:11px}
+  .rank{font-family:'Fraunces',serif;font-size:15px;font-weight:600}
+  tr:hover td{background:rgba(212,162,78,.05)}
+  tr.hot td{background:rgba(169,137,216,.05)}
+  tr.hot:hover td{background:rgba(169,137,216,.1)}
+  .bar{display:inline-block;height:7px;border-radius:4px;vertical-align:middle;margin-left:5px}
+  .pill{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+  .p-clean{background:rgba(95,184,127,.15);color:var(--green)}
+  .p-watch{background:rgba(212,104,95,.15);color:var(--red)}
+  .p-spend{background:rgba(106,160,216,.15);color:var(--blue)}
+  .nm{color:var(--dim);font-style:italic}
+  .moatsel{background:var(--panel2);border:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:11px;border-radius:6px;padding:3px 5px;cursor:pointer}
+  .mtrend{font-weight:600}
+  .t-up{color:var(--green)} .t-dn{color:var(--red)} .t-flat{color:var(--dim)}
+  .caveat{font-size:10.5px;color:var(--purple);font-style:italic;padding:0 6px 9px 30px;max-width:680px}
+  .caveat.cyc{color:var(--gold)}
+  .hm{margin-top:34px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+  .hm h2{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin-bottom:4px}
+  .hm .note{color:var(--dim);font-size:12px;margin-bottom:16px}
+  .hm ul{list-style:none}
+  .hm li{padding:10px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  .hm li:last-child{border:0}
+  .hm .nmn{color:var(--ink);font-weight:600}
+  .hm .rs{color:var(--dim)}
+  .foot{color:var(--dim);font-size:11px;margin-top:22px;line-height:1.7}
+  .foot b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Quality <span class="accent">&middot;</span> Value <span class="accent">&middot;</span> Moat Screener</h1>
+  <p class="sub">Drag the weights to reflect what you value; the ranking re-sorts live. Set each company's <em>moat trend</em> yourself. Hot/trending names are mixed in and tagged by type so you can see exactly where they land. Estimates for relative screening — not advice.</p>
+
+  <div class="stamp">
+    <span>📸 <b>Snapshot</b> — frozen, does not auto-update</span>
+    <span class="sep">|</span>
+    <span>Data as of <b>4 June 2026</b></span>
+    <span class="sep">|</span>
+    <span>Methodology <b>v1.6</b></span>
+    <span class="sep">|</span>
+    <span>Ranks within this 25-name set (not the full index)</span>
+  </div>
+
+  <div class="moatbanner">
+    <b>⚠ Remember while you study:</b> Every financial metric here is a <em>symptom</em> of a moat, not the moat itself — and all of them look backward. The score can't see whether an advantage is <em>widening or eroding</em>. That judgment is yours, in the Moat Trend column, and it deserves as much weight as anything the numbers say.
+  </div>
+
+  <div class="typebanner">
+    <b>Comparing across types is apples-to-oranges.</b>
+    <span class="tag ty-comp">compounder</span> durable, self-funding quality &nbsp;
+    <span class="tag ty-cyc">cyclical</span> earnings swing with a commodity cycle — peak numbers aren't durable &nbsp;
+    <span class="tag ty-hyper">hyper-growth</span> explosive revenue but unprofitable &amp; capital-hungry. A cyclical at its peak or a cash-burning grower can post a flattering score for reasons that won't last.
+  </div>
+
+  <div class="controls">
+    <h2>Weighting</h2>
+    <p class="note">How much each factor counts toward the composite. Auto-normalized. Metrics now use fixed sensible ranges (with caps), so one outlier no longer distorts the whole column and adding names doesn't reshuffle everyone.</p>
+    <div class="sliders" id="sliders"></div>
+    <div class="total">Weights normalize automatically &middot; <b id="totalTxt"></b></div>
+  </div>
+
+  <div class="modebar">
+    <button id="mQ" class="on">Rank by Composite (Quality + Moat)</button>
+    <button id="mV">Rank by Value (cheapest vs. growth)</button>
+  </div>
+  <p class="hint">↕ Click any column header to sort. Moat Trend: −2 (eroding) to +2 (widening fast). "n/m" = not meaningful.</p>
+
+  <div class="whatif">
+    <h2>🔍 Drop in any ticker — quick &amp; dirty comparison</h2>
+    <p class="note">Type a name and whatever numbers you have (from the engine for public tickers, or estimates for private/pre-IPO ones), then "Add &amp; rank" to see exactly where it slots. Leave a field blank if unknown — it's skipped. Pre-filled with <b>SpaceX</b> as an example: note that as a loss-making private company, its quality inputs are guesses and its valuation is off the charts. Private companies can't be truly quality-scored — this shows you the shape of the bet, not a verdict.</p>
+    <div class="autofill">
+      <input id="wi-sym" placeholder="Ticker e.g. NVDA" autocomplete="off">
+      <button class="wi-auto" id="wi-autobtn">⚡ Auto-fill from web</button>
+      <button class="wi-news" id="wi-newsbtn">📰 News check</button>
+      <span class="wi-status" id="wi-status"></span>
+    </div>
+    <div class="newscard" id="wi-news"></div>
+    <div class="wi-grid">
+      <div class="wi-f"><label>Name</label><input id="wi-name" value="SpaceX (est.)"></div>
+      <div class="wi-f"><label>Type</label><select id="wi-type"><option value="hyper">hyper-growth</option><option value="comp">compounder</option><option value="cyc">cyclical</option></select></div>
+      <div class="wi-f"><label>ROIC %</label><input id="wi-roic" type="number" value=""></div>
+      <div class="wi-f"><label>FCF margin %</label><input id="wi-fcf" type="number" value="-5"></div>
+      <div class="wi-f"><label>Gross margin %</label><input id="wi-gm" type="number" value="50"></div>
+      <div class="wi-f"><label>Rev growth %</label><input id="wi-rg" type="number" value="33"></div>
+      <div class="wi-f"><label>Net debt/EBITDA</label><input id="wi-nd" type="number" step="0.1" value="1"></div>
+      <div class="wi-f"><label>Fwd P/E (blank=n/m)</label><input id="wi-pe" type="number" value=""></div>
+      <div class="wi-f"><label>P/S</label><input id="wi-ps" type="number" step="0.1" value="65"></div>
+      <div class="wi-f"><label>EPS growth %</label><input id="wi-eg" type="number" value=""></div>
+      <div class="wi-f"><label>Moat trend</label><select id="wi-moat"><option value="-2">−2</option><option value="-1">−1</option><option value="0">0</option><option value="1">+1</option><option value="2" selected>+2</option></select></div>
+    </div>
+    <div class="wi-btns">
+      <button class="wi-add" id="wi-addbtn">Add &amp; rank</button>
+      <button class="wi-clear" id="wi-clearbtn">Clear added</button>
+    </div>
+    <div class="wi-result" id="wi-result"></div>
+  </div>
+
+  <table id="tbl"><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table>
+
+  <div class="hm">
+    <h2>Honorable mentions</h2>
+    <p class="note">Strong businesses that just missed the 25 or sit a notch lower on the blend.</p>
+    <ul id="hmlist"></ul>
+  </div>
+
+  <p class="foot">
+    <b>Composite</b> = weighted blend of ROIC, FCF margin, gross margin, revenue growth, leverage (inverted), and <b>your</b> moat-trend score, each normalized on a fixed range.
+    <b>Value</b> = 60% PEG (fwd P/E ÷ EPS growth) + 40% price-to-sales; lower is cheaper. Shown "n/m" for loss-makers and for cyclicals at peak earnings (where P/E understates true value).
+    <b>Trajectory:</b> <span class="pill p-clean">clean</span> · <span class="pill p-spend">spending</span> heavy capex, monetizing · <span class="pill p-watch">watch</span> capex eroding FCF.<br>
+    Not financial advice. Estimates are recent approximations for relative comparison — verify against current filings. Cyclical figures shown on a normalized through-cycle basis. Inputs reset on reload.<br>
+    <span style="color:var(--gold)">Snapshot v1.6 &middot; data as of 4 June 2026.</span> This is a frozen capture; for live, full-universe numbers use the companion engine (screener_engine.py).
+  </p>
+</div>
+
+<script>
+const METRICS=[
+  {k:"ROIC", label:"ROIC",        w:25, lo:0,  hi:50},
+  {k:"FCFm", label:"FCF margin",  w:20, lo:-20,hi:50},
+  {k:"GrMg", label:"Gross margin",w:12, lo:0,  hi:100},
+  {k:"RevG", label:"Rev growth",  w:13, lo:-10,hi:40},
+  {k:"NDbt", label:"Low leverage",w:10, lo:3,  hi:-1},  // inverted: lo>hi
+  {k:"Moat", label:"Moat trend",  w:20, lo:-2, hi:2},
+];
+// tkr,name, ROIC,FCFm,GrMg,RevG,NDbt, fwdPE,fwdPS,EPSg, traj, moat, type, valueMode, caveat
+// valueMode: "ok" | "nm-loss" | "nm-cyc"
+const DATA=[
+ ["NVDA","Nvidia",        60,48,75,60,-1.0, 30,16,35,"spend", 1,"comp","ok",""],
+ ["MA","Mastercard",      50,45,100,14,0.4, 33,17,16,"clean", 1,"comp","ok",""],
+ ["V","Visa",             29,50,80,16,0.1,  28,15,14,"clean", 0,"comp","ok",""],
+ ["AAPL","Apple",         57,27,47, 6,0.2,  30, 8, 9,"clean", 0,"comp","ok",""],
+ ["LLY","Eli Lilly",      38,22,82,45,0.8,  29, 9,30,"clean", 1,"comp","ok",""],
+ ["ADBE","Adobe",         27,38,89,10,0.0,  18, 7,11,"clean",-1,"comp","ok",""],
+ ["BKNG","Booking",       40,33,88,10,1.0,  24, 7,14,"clean", 0,"comp","ok",""],
+ ["META","Meta",          30,25,81,20,-0.5, 23, 8,14,"watch", 0,"comp","ok",""],
+ ["CDNS","Cadence",       28,30,86,18,0.2,  40,17,18,"clean", 2,"comp","ok",""],
+ ["GOOGL","Alphabet",     30,22,58,14,-0.8, 22, 7,16,"spend", 0,"comp","ok",""],
+ ["KLAC","KLA",           27,30,62,25,0.7,  22, 8,18,"clean", 1,"comp","ok",""],
+ ["MSFT","Microsoft",     27,22,69,14,0.1,  30,11,13,"watch", 1,"comp","ok",""],
+ ["SNPS","Synopsys",      22,26,81,14,0.3,  33,13,15,"clean", 2,"comp","ok",""],
+ ["MCO","Moody's",        32,30,73,12,1.5,  33,11,12,"clean", 0,"comp","ok",""],
+ ["INTU","Intuit",        20,28,80,15,0.5,  29,10,15,"clean", 0,"comp","ok",""],
+ ["MNST","Monster Bev",   25,22,55,10,-0.4, 30, 8,11,"clean", 0,"comp","ok",""],
+ ["ADP","ADP",            28,18,45, 8,0.3,  27, 7, 9,"clean", 0,"comp","ok",""],
+ ["SPGI","S&P Global",    18,33,68,12,1.6,  29,11,11,"clean", 0,"comp","ok",""],
+ ["TXN","Texas Instr.",   22,18,58,19,1.2,  30, 9,14,"watch", 0,"comp","ok",""],
+ ["KO","Coca-Cola",       16,22,60, 5,1.6,  23, 6, 6,"clean", 0,"comp","ok",""],
+ ["ASML","ASML",          30,30,52,14,0.0,  30,11,16,"clean", 2,"comp","ok",""],
+ ["FICO","Fair Isaac",    40,35,80,15,2.0,  45,18,18,"clean", 1,"comp","ok",""],
+ ["VEEV","Veeva",         18,38,75,16,-0.6, 45,16,16,"clean", 1,"comp","ok",""],
+ ["CPRT","Copart",        25,28,45,10,-0.5, 32,12,11,"clean", 1,"comp","ok",""],
+ ["TSM","TSMC",           28,30,59,24,0.1,  22, 8,25,"spend", 1,"comp","ok",""],
+];
+const I={tk:0,nm:1,ROIC:2,FCFm:3,GrMg:4,RevG:5,NDbt:6,fwdPE:7,fwdPS:8,EPSg:9,traj:10,Moat:11,type:12,vmode:13,cav:14,userAdded:15};
+const PILL={clean:["p-clean","clean"],spend:["p-spend","spending"],watch:["p-watch","watch"]};
+const TYPE={comp:["ty-comp","compounder"],cyc:["ty-cyc","cyclical"],hyper:["ty-hyper","hyper-growth"]};
+const MOAT_OPTS=[[-2,"−2 eroding"],[-1,"−1 weakening"],[0,"0 stable"],[1,"+1 widening"],[2,"+2 strong+"]];
+const HONORABLE=[
+ ["TransUnion / Equifax (TRU)","Credit-bureau oligopoly; data-network moat, more cyclical & levered than FICO."],
+ ["Zoetis (ZTS)","Animal-health leader; durable brand + R&D moat, steadier than human pharma."],
+ ["Motorola Solutions (MSI)","Public-safety comms near-monopoly; sticky government contracts."],
+ ["Intuitive Surgical (ISRG)","da Vinci robot installed base + switching costs; premium valuation."],
+ ["Broadridge (BR)","Back-office plumbing for financial firms; quiet switching-cost moat."],
+ ["Ferrari (RACE)","Brand + deliberate scarcity = extraordinary pricing power; small growth runway."],
+ ["Broadcom (AVGO)","AI-chip + software; arguably true quality, but check leverage from acquisitions."],
+ ["Palantir (PLTR)","Real, sticky software moat — but among the most extreme valuations in the market."],
+];
+let mode="Q", sortKey=null, sortDir=1;
+
+function clamp(x){return Math.max(0,Math.min(1,x));}
+function norm(val,m){
+  if(val===null||val===undefined||Number.isNaN(val)) return null; // skip missing
+  const t=(val-m.lo)/(m.hi-m.lo);
+  return clamp(t)*100;
+}
+function composite(r){
+  let acc=0, tot=0;
+  METRICS.forEach(m=>{
+    const n=norm(r[I[m.k]],m);
+    if(n===null) return;          // missing metric: skip, renormalize on the rest
+    acc+=n*m.w; tot+=m.w;
+  });
+  return tot? acc/tot : 0;
+}
+function pegOf(r){return r[I.fwdPE]/r[I.EPSg];}
+function valueScore(r){
+  if(r[I.vmode]!=="ok") return Infinity; // n/m sorts to bottom
+  const pn=clamp((pegOf(r)-0.5)/(4.0-0.5));
+  const sn=clamp((r[I.fwdPS]-4)/(18-4));
+  return 0.6*pn+0.4*sn;
+}
+function buildSliders(){
+  const c=document.getElementById("sliders");c.innerHTML="";
+  METRICS.forEach((m,i)=>{
+    const d=document.createElement("div");d.className="sl";
+    d.innerHTML=`<label><span>${m.label}</span><span id="wv${i}">${m.w}</span></label>
+      <input type="range" min="0" max="50" value="${m.w}" id="w${i}">`;
+    c.appendChild(d);
+    d.querySelector("input").addEventListener("input",e=>{
+      METRICS[i].w=+e.target.value;
+      document.getElementById("wv"+i).textContent=e.target.value;
+      render();
+    });
+  });
+}
+function moatTrendLabel(v){
+  if(v>0)return `<span class="mtrend t-up">+${v} ▲</span>`;
+  if(v<0)return `<span class="mtrend t-dn">${v} ▼</span>`;
+  return `<span class="mtrend t-flat">0 ▬</span>`;
+}
+function fmtFCF(v){ if(v===null||v===undefined) return `<span class="nm">—</span>`; return v<0 ? `<span class="nm">neg</span>` : v+"%"; }
+function valueCell(r,vs){
+  if(r[I.vmode]==="nm-loss") return `<span class="nm">n/m · loss</span>`;
+  if(r[I.vmode]==="nm-cyc")  return `<span class="nm">n/m · peak</span>`;
+  return vs.toFixed(2);
+}
+function pegCell(r){
+  if(r[I.vmode]!=="ok") return `<span class="nm">—</span>`;
+  return pegOf(r).toFixed(2);
+}
+function render(){
+  document.getElementById("totalTxt").textContent=`raw sum ${METRICS.reduce((s,m)=>s+m.w,0)}`;
+  document.getElementById("mQ").classList.toggle("on",mode==="Q");
+  document.getElementById("mV").classList.toggle("on",mode==="V");
+  let rows=DATA.map((r,i)=>({r,i,q:composite(r),v:valueScore(r)}));
+  if(sortKey){
+    rows.sort((a,b)=>{
+      let av,bv;
+      if(sortKey==="q"){av=a.q;bv=b.q}
+      else if(sortKey==="v"){av=a.v;bv=b.v}
+      else if(sortKey==="peg"){av=a.r[I.vmode]==="ok"?pegOf(a.r):1e9;bv=b.r[I.vmode]==="ok"?pegOf(b.r):1e9}
+      else{av=a.r[I[sortKey]];bv=b.r[I[sortKey]]}
+      return (av-bv)*sortDir;
+    });
+  } else { rows.sort((a,b)=> mode==="Q" ? b.q-a.q : a.v-b.v); }
+
+  const head=document.getElementById("head");
+  head.innerHTML=`<th class="l">#</th><th class="l">Tkr</th><th class="l">Company</th>
+    <th class="l">Type</th>
+    <th data-s="q">Score</th><th data-s="v">Value</th><th data-s="peg">PEG</th>
+    <th data-s="ROIC">ROIC</th><th data-s="FCFm">FCF%</th><th data-s="GrMg">GrMg</th>
+    <th data-s="RevG">RevG</th><th data-s="fwdPE">fwdPE</th>
+    <th class="l">Trajectory</th><th class="l" data-s="Moat">Moat trend ✎</th>`;
+  head.querySelectorAll("th[data-s]").forEach(th=>{
+    th.onclick=()=>{const k=th.dataset.s;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==="v"||k==="peg")?1:-1;}render();};
+  });
+
+  const qmax=Math.max(...rows.map(x=>x.q));
+  const body=document.getElementById("body");body.innerHTML="";
+  rows.forEach((x,i)=>{
+    const r=x.r,[cls,txt]=PILL[r[I.traj]],[tcls,ttxt]=TYPE[r[I.type]];
+    const barw=Math.round(x.q/qmax*55);
+    const isHot=r[I.type]!=="comp";
+    const sel=`<select class="moatsel" data-row="${x.i}">`+
+      MOAT_OPTS.map(([val,lab])=>`<option value="${val}" ${val===r[I.Moat]?"selected":""}>${lab}</option>`).join("")+`</select>`;
+    const tr=document.createElement("tr");
+    if(r[I.userAdded]) tr.className="youradded";
+    else if(isHot) tr.className="hot";
+    const yrtag = r[I.userAdded] ? ' <span class="yrtag">yours</span>' : '';
+    tr.innerHTML=`<td class="l rank">${i+1}</td>
+      <td class="l tk">${r[I.tk]}${yrtag}</td><td class="l co">${r[I.nm]}</td>
+      <td class="l"><span class="tag ${tcls}">${ttxt}</span></td>
+      <td>${x.q.toFixed(1)}<span class="bar" style="width:${barw}px;background:var(--gold)"></span></td>
+      <td>${valueCell(r,x.v)}</td><td>${pegCell(r)}</td>
+      <td>${r[I.ROIC]===null?'<span class="nm">—</span>':r[I.ROIC]+'%'}</td><td>${fmtFCF(r[I.FCFm])}</td><td>${r[I.GrMg]===null?'<span class="nm">—</span>':r[I.GrMg]+'%'}</td>
+      <td>${r[I.RevG]===null?'<span class="nm">—</span>':r[I.RevG]+'%'}</td><td>${(r[I.fwdPE]===0||r[I.fwdPE]===null)?'<span class="nm">—</span>':r[I.fwdPE]}</td>
+      <td class="l"><span class="pill ${cls}">${txt}</span></td>
+      <td class="l">${moatTrendLabel(r[I.Moat])} ${sel}</td>`;
+    body.appendChild(tr);
+    if(r[I.cav]){
+      const cv=document.createElement("tr");
+      cv.innerHTML=`<td colspan="14" class="caveat ${r[I.type]==='cyc'?'cyc':''}">↳ ${r[I.cav]}</td>`;
+      body.appendChild(cv);
+    }
+  });
+  body.querySelectorAll(".moatsel").forEach(s=>{
+    s.onchange=e=>{DATA[+e.target.dataset.row][I.Moat]=+e.target.value;render();};
+  });
+}
+const hm=document.getElementById("hmlist");
+HONORABLE.forEach(([n,r])=>{const li=document.createElement("li");li.innerHTML=`<span class="nmn">${n}</span> — <span class="rs">${r}</span>`;hm.appendChild(li);});
+document.getElementById("mQ").onclick=()=>{mode="Q";sortKey=null;render();};
+document.getElementById("mV").onclick=()=>{mode="V";sortKey=null;render();};
+
+// ---- What-if: add any ticker ----
+function numOrNull(id){const v=document.getElementById(id).value.trim();return v===""?null:parseFloat(v);}
+function addContender(){
+  const name=document.getElementById("wi-name").value.trim()||"Your pick";
+  const type=document.getElementById("wi-type").value;
+  const roic=numOrNull("wi-roic"), fcf=numOrNull("wi-fcf"), gm=numOrNull("wi-gm"),
+        rg=numOrNull("wi-rg"), nd=numOrNull("wi-nd"), pe=numOrNull("wi-pe"),
+        ps=numOrNull("wi-ps"), eg=numOrNull("wi-eg"), moat=parseInt(document.getElementById("wi-moat").value);
+  const traj = (type==="comp")?"clean":"watch";
+  // value meaningful only with positive P/E, positive growth, and a P/S
+  const vmode = (pe&&pe>0&&eg&&eg>0&&ps) ? "ok" : "nm-loss";
+  const ticker = name.split(/[\s(]/)[0].toUpperCase().slice(0,5) || "NEW";
+  const row=[ticker,name,roic,fcf,gm,rg,(nd===null?0:nd),(pe===null?0:pe),(ps===null?0:ps),(eg===null?0:eg),traj,moat,type,vmode,"",true];
+  // remove any previous user rows, then add
+  for(let i=DATA.length-1;i>=0;i--) if(DATA[i][I.userAdded]) DATA.splice(i,1);
+  DATA.push(row);
+  render();
+  // report rank
+  let rows=DATA.map((r,i)=>({r,q:composite(r),v:valueScore(r)})).sort((a,b)=>b.q-a.q);
+  const pos=rows.findIndex(x=>x.r[I.userAdded])+1, n=rows.length;
+  const me=rows.find(x=>x.r[I.userAdded]);
+  const valTxt = me.r[I.vmode]==="ok" ? `value score ${me.v.toFixed(2)} (lower=cheaper)` : `value <b>n/m</b> (no positive earnings)`;
+  document.getElementById("wi-result").innerHTML =
+    `<b>${name}</b> ranks <b>#${pos} of ${n}</b> on the composite — ${valTxt}. Scroll to the gold row. ` +
+    (me.r[I.vmode]!=="ok" ? `Its score rests only on the metrics you supplied; missing ones were skipped.` : ``);
+  document.querySelector("tr.youradded")?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function clearAdded(){
+  for(let i=DATA.length-1;i>=0;i--) if(DATA[i][I.userAdded]) DATA.splice(i,1);
+  document.getElementById("wi-result").innerHTML="";
+  render();
+}
+document.getElementById("wi-addbtn").onclick=addContender;
+document.getElementById("wi-clearbtn").onclick=clearAdded;
+
+// ---- Auto-fill from the web via Claude + web_search ----
+async function autoFill(){
+  const sym=document.getElementById("wi-sym").value.trim();
+  if(!sym){document.getElementById("wi-status").textContent="Enter a ticker first.";return;}
+  const btn=document.getElementById("wi-autobtn"), status=document.getElementById("wi-status");
+  btn.disabled=true; status.textContent="🔎 searching the web for "+sym.toUpperCase()+" …";
+  const prompt=`Search the web for the most recent fundamental metrics for the company with ticker or name "${sym}". `+
+    `Return ONLY a single JSON object, no markdown, no prose, with these keys (use plain numbers; percentages as numbers like 25 for 25%; use null if genuinely unknown):\n`+
+    `{"name": short company name, "type": one of "compounder"|"cyclical"|"hyper-growth", `+
+    `"roic": return on invested capital %, "fcf_margin": free cash flow margin %, "gross_margin": gross margin %, `+
+    `"rev_growth": YoY revenue growth %, "net_debt_ebitda": net debt / EBITDA ratio, `+
+    `"fwd_pe": forward P/E (null if loss-making), "ps": price-to-sales, "eps_growth": forward EPS growth %}`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",max_tokens:1000,
+        messages:[{role:"user",content:prompt}],
+        tools:[{type:"web_search_20250305",name:"web_search"}]
+      })
+    });
+    const data=await resp.json();
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+    const match=text.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error("no JSON in response");
+    const o=JSON.parse(match[0]);
+    const set=(id,v)=>{ if(v!==null&&v!==undefined&&v!=="") document.getElementById(id).value=v; };
+    set("wi-name", o.name||sym.toUpperCase());
+    const tmap={"compounder":"comp","cyclical":"cyc","hyper-growth":"hyper","hyper growth":"hyper"};
+    if(o.type&&tmap[o.type.toLowerCase()]) document.getElementById("wi-type").value=tmap[o.type.toLowerCase()];
+    set("wi-roic",o.roic); set("wi-fcf",o.fcf_margin); set("wi-gm",o.gross_margin);
+    set("wi-rg",o.rev_growth); set("wi-nd",o.net_debt_ebitda);
+    document.getElementById("wi-pe").value = (o.fwd_pe===null||o.fwd_pe===undefined)?"":o.fwd_pe;
+    set("wi-ps",o.ps); set("wi-eg",o.eps_growth);
+    status.innerHTML="✓ Auto-filled (AI estimate — sanity-check, then set the moat trend yourself and hit Add &amp; rank).";
+  }catch(e){
+    status.textContent="Couldn't auto-fill ("+e.message+"). Enter values manually, or use the engine for reliable data.";
+  }finally{ btn.disabled=false; }
+}
+document.getElementById("wi-autobtn").onclick=autoFill;
+
+// ---- News check: quality/value-relevant headlines via Claude + web_search ----
+async function newsCheck(){
+  const sym=document.getElementById("wi-sym").value.trim();
+  const card=document.getElementById("wi-news");
+  if(!sym){card.innerHTML='<div class="news-overall">Enter a ticker first.</div>';return;}
+  const btn=document.getElementById("wi-newsbtn");
+  btn.disabled=true;
+  card.innerHTML='<div class="news-overall">📰 pulling recent news for '+sym.toUpperCase()+' …</div>';
+  const prompt=`Search the web for the most recent (prioritize the last ~90 days) material news about the company "${sym}" that is relevant to its business QUALITY or VALUATION — e.g. earnings/margins/guidance, competition or new entrants, regulation, major contracts or customer wins/losses, pricing power, capital allocation, or anything affecting its competitive moat. Ignore trivial PR. Summarize in your OWN words; do not quote article text. `+
+    `Return ONLY a JSON object, no markdown: `+
+    `{"as_of":"today's date", "overall":"one concise sentence on the net read for quality/value", `+
+    `"items":[{"date":"approx date","headline":"short paraphrased headline","why":"one line on why it matters for quality/value/moat","signal":"positive"|"negative"|"neutral","category":"moat"|"financial"|"macro"}]} `+
+    `Limit to the 3-4 most material items, most recent first.`;
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",max_tokens:1000,
+        messages:[{role:"user",content:prompt}],
+        tools:[{type:"web_search_20250305",name:"web_search"}]
+      })
+    });
+    const data=await resp.json();
+    const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+    const match=text.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error("no JSON");
+    const o=JSON.parse(match[0]);
+    const sigCls={positive:"sig-pos",negative:"sig-neg",neutral:"sig-neu"};
+    const sigWord={positive:"pos",negative:"neg",neutral:"neu"};
+    let html=`<div class="news-overall">📰 <b>${(o.name||sym).toString().toUpperCase()}</b> — ${o.overall||""} <span style="color:var(--dim)">(as of ${o.as_of||"now"})</span></div>`;
+    (o.items||[]).slice(0,4).forEach(it=>{
+      const sc=sigCls[it.signal]||"sig-neu", sw=sigWord[it.signal]||"neu";
+      html+=`<div class="news-item"><span class="news-dot ${sc}"></span><div class="news-body">`+
+        `<div class="news-head">${it.headline||""}<span class="news-cat">${it.category||""}</span></div>`+
+        `<div class="news-meta">${it.date||""}</div>`+
+        `<div class="news-why"><b class="${sw}">${(it.signal||"neutral")}</b> · ${it.why||""}</div>`+
+        `</div></div>`;
+    });
+    html+=`<div class="news-meta" style="margin-top:8px">AI-summarized from web search — point-in-time, may be incomplete or wrong; verify before acting. Use these to inform the moat-trend you set.</div>`;
+    card.innerHTML=html;
+  }catch(e){
+    card.innerHTML='<div class="news-overall">Couldn\'t pull news ('+e.message+'). Try again, or check a news source directly.</div>';
+  }finally{ btn.disabled=false; }
+}
+document.getElementById("wi-newsbtn").onclick=newsCheck;
+
+buildSliders();render();
+</script>
+</body>
+</html>
